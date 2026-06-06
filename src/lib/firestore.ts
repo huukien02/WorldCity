@@ -9,6 +9,7 @@ import type {
   MarketListingDoc,
   NotificationDoc,
   GoldTransactionDoc,
+  DailyQuestDoc,
 } from '@/types/firestore'
 
 function col<T>(path: string) {
@@ -37,6 +38,9 @@ export const notificationsCol = (userId: string) =>
 
 export const goldLogsCol = (userId: string) =>
   col<GoldTransactionDoc>(`goldTransactions/${userId}/logs`)
+
+export const dailyQuestDoc = (userId: string, date: string) =>
+  d<DailyQuestDoc>(`users/${userId}/dailyProgress`, date)
 
 export function getChunkId(tileX: number, tileY: number) {
   return `${Math.floor(tileX / 10)}_${Math.floor(tileY / 10)}`

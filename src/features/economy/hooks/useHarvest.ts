@@ -5,6 +5,7 @@ import { db } from '@/lib/firebase'
 import { userDoc, chunkDoc, goldLogsCol, getChunkId, getTileKey } from '@/lib/firestore'
 import { BUILDING_CONFIG, HARVEST_CAP_MINUTES } from '@/types'
 import { HARVEST_COOLDOWN_MS } from './usePendingGold'
+import { trackQuestProgress } from '@/features/quest/utils/trackQuestProgress'
 
 export function useHarvest() {
   async function harvestTile(uid: string, tileX: number, tileY: number): Promise<number> {
@@ -41,16 +42,18 @@ export function useHarvest() {
       })
     })
 
-    // Log sau transaction thành công
     if (earned > 0) {
-      await addDoc(goldLogsCol(uid), {
-        type: 'earn',
-        amount: earned,
-        reason: `Thu hoạch tại (${tileX}, ${tileY})`,
-        balanceBefore: 0, // simplified - không query lại
-        balanceAfter: 0,
-        createdAt: serverTimestamp(),
-      })
+      await Promise.all([
+        addDoc(goldLogsCol(uid), {
+          type: 'earn',
+          amount: earned,
+          reason: `Thu hoạch tại (${tileX}, ${tileY})`,
+          balanceBefore: 0,
+          balanceAfter: 0,
+          createdAt: serverTimestamp(),
+        }),
+        trackQuestProgress(uid, 'harvest'),
+      ])
     }
 
     return earned

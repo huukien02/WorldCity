@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { Header } from '@/components/layout/Header'
 import { TileInfoPanel } from './TileInfoPanel'
+import { QuestPanel } from '@/features/quest/components/QuestPanel'
 import { useCurrentUser } from '@/features/auth/hooks/useAuth'
 import { useMapStore } from '../store'
 
@@ -27,6 +28,7 @@ export function GameScreen() {
             <p className="text-xs text-slate-500 uppercase tracking-wider">Thông tin ô đất</p>
           </div>
           <TileInfoPanel />
+          <QuestPanel />
         </aside>
 
         <main className="flex-1 relative">

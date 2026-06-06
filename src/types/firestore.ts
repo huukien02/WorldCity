@@ -103,3 +103,25 @@ export interface GoldTransactionDoc {
   balanceAfter: number
   createdAt: Timestamp
 }
+
+export type QuestType = 'claim' | 'build' | 'harvest'
+
+export interface QuestDef {
+  title: string
+  description: string
+  target: number
+  reward: number
+}
+
+export interface QuestProgress {
+  current: number
+  rewardClaimed: boolean
+}
+
+export interface DailyQuestDoc {
+  date: string
+  quests: Record<QuestType, QuestDef>
+  progress: Record<QuestType, QuestProgress>
+  bonusRewardClaimed: boolean
+  createdAt: Timestamp
+}

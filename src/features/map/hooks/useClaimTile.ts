@@ -4,6 +4,7 @@ import { runTransaction, serverTimestamp, addDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { userDoc, chunkDoc, activitiesCol, getChunkId, getTileKey } from '@/lib/firestore'
 import { CLAIM_COST } from '@/types'
+import { trackQuestProgress } from '@/features/quest/utils/trackQuestProgress'
 
 export function useClaimTile() {
   async function claimTile(uid: string, displayName: string, tileX: number, tileY: number) {
@@ -43,15 +44,18 @@ export function useClaimTile() {
       }, { merge: true })
     })
 
-    await addDoc(activitiesCol, {
-      type: 'claim',
-      userId: uid,
-      userName: displayName,
-      tileX,
-      tileY,
-      detail: `Đã claim ô (${tileX}, ${tileY})`,
-      createdAt: serverTimestamp(),
-    })
+    await Promise.all([
+      addDoc(activitiesCol, {
+        type: 'claim',
+        userId: uid,
+        userName: displayName,
+        tileX,
+        tileY,
+        detail: `Đã claim ô (${tileX}, ${tileY})`,
+        createdAt: serverTimestamp(),
+      }),
+      trackQuestProgress(uid, 'claim'),
+    ])
   }
 
   return { claimTile }

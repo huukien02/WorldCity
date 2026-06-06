@@ -5,6 +5,7 @@ import { db } from '@/lib/firebase'
 import { userDoc, chunkDoc, activitiesCol, getChunkId, getTileKey } from '@/lib/firestore'
 import { BUILDING_CONFIG } from '@/types'
 import type { BuildingType } from '@/types/firestore'
+import { trackQuestProgress } from '@/features/quest/utils/trackQuestProgress'
 
 export function useBuildOnTile() {
   async function buildOnTile(
@@ -48,15 +49,18 @@ export function useBuildOnTile() {
       })
     })
 
-    await addDoc(activitiesCol, {
-      type: 'build',
-      userId: uid,
-      userName: displayName,
-      tileX,
-      tileY,
-      detail: `Đã xây ${config.label} tại (${tileX}, ${tileY})`,
-      createdAt: serverTimestamp(),
-    })
+    await Promise.all([
+      addDoc(activitiesCol, {
+        type: 'build',
+        userId: uid,
+        userName: displayName,
+        tileX,
+        tileY,
+        detail: `Đã xây ${config.label} tại (${tileX}, ${tileY})`,
+        createdAt: serverTimestamp(),
+      }),
+      trackQuestProgress(uid, 'build'),
+    ])
   }
 
   return { buildOnTile }
