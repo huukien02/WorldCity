@@ -14,16 +14,27 @@ interface MobileSideSheetProps {
 export function MobileSideSheet({ open, onClose }: MobileSideSheetProps) {
   const selectedTile = useMapStore((s) => s.selectedTile);
   const sheetRef = useRef<HTMLDivElement>(null);
+  // Remember tile at open time — only auto-close when THAT tile is deselected
+  const tileWhenOpenedRef = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      tileWhenOpenedRef.current = selectedTile;
+    }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-close only if sheet was tile-triggered and that tile got deselected
+  useEffect(() => {
+    if (!open) return;
+    if (tileWhenOpenedRef.current !== null && !selectedTile) {
+      onClose();
+    }
+  }, [selectedTile, open, onClose]);
 
   // Close on backdrop tap
   function handleBackdropClick(e: React.MouseEvent) {
     if (e.target === e.currentTarget) onClose();
   }
-
-  // Close when tile is deselected
-  useEffect(() => {
-    if (!selectedTile) onClose();
-  }, [selectedTile, onClose]);
 
   return (
     <>

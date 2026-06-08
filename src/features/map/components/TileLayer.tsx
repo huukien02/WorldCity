@@ -101,6 +101,19 @@ export const TileLayer = memo(function TileLayer({
     [setSelectedTile, onTileSelect],
   );
 
+  // onTap is Konva's touch tap — fires on mobile when it's a clean tap (not drag)
+  const handleTap = useCallback(
+    (e: KonvaEventObject<Event>) => {
+      const tileX = e.target.getAttr("tileX") as number | undefined;
+      const tileY = e.target.getAttr("tileY") as number | undefined;
+      if (tileX !== undefined && tileY !== undefined) {
+        setSelectedTile({ x: tileX, y: tileY });
+        onTileSelect?.();
+      }
+    },
+    [setSelectedTile, onTileSelect],
+  );
+
   return (
     <Layer>
       {tiles.map(({ x, y, data }) => {
@@ -135,6 +148,7 @@ export const TileLayer = memo(function TileLayer({
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             onClick={handleClick}
+            onTap={handleTap}
           />
         );
       })}
@@ -152,6 +166,7 @@ interface IsoTileProps {
   onMouseMove: (e: KonvaEventObject<MouseEvent>) => void;
   onMouseLeave: () => void;
   onClick: (e: KonvaEventObject<MouseEvent>) => void;
+  onTap: (e: KonvaEventObject<Event>) => void;
 }
 
 const IsoTile = memo(
@@ -165,6 +180,7 @@ const IsoTile = memo(
     onMouseMove,
     onMouseLeave,
     onClick,
+    onTap,
   }: IsoTileProps) {
     return (
       <Shape
@@ -177,6 +193,7 @@ const IsoTile = memo(
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}
         onClick={onClick}
+        onTap={onTap}
       />
     );
   },
@@ -184,5 +201,6 @@ const IsoTile = memo(
     prev.fill === next.fill &&
     prev.stroke === next.stroke &&
     prev.screenX === next.screenX &&
-    prev.screenY === next.screenY,
+    prev.screenY === next.screenY &&
+    prev.onTap === next.onTap,
 );
