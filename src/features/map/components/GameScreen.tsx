@@ -9,6 +9,7 @@ import { Minimap } from "./Minimap";
 import { ChatPanel } from "@/features/chat/components/ChatPanel";
 import { LeaderboardPanel } from "@/features/leaderboard/components/LeaderboardPanel";
 import { MobileSideSheet } from "./MobileSideSheet";
+import { CityScoreCard } from "@/features/city/components/CityScoreCard";
 import { useCurrentUser } from "@/features/auth/hooks/useAuth";
 import { useMapStore } from "../store";
 
@@ -53,6 +54,7 @@ export function GameScreen() {
           </div>
           <TileInfoPanel />
           <QuestPanel />
+          <CityScoreCard />
         </aside>
 
         {/* ── Map canvas ── */}

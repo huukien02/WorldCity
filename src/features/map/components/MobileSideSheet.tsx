@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { TileInfoPanel } from "./TileInfoPanel";
 import { QuestPanel } from "@/features/quest/components/QuestPanel";
+import { CityScoreCard } from "@/features/city/components/CityScoreCard";
 import { useMapStore } from "../store";
 
 interface MobileSideSheetProps {
@@ -68,6 +69,7 @@ export function MobileSideSheet({ open, onClose }: MobileSideSheetProps) {
         <div className="overflow-y-auto flex-1">
           <TileInfoPanel />
           <QuestPanel />
+          <CityScoreCard />
         </div>
       </div>
     </>
