@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { query, orderBy, limit, onSnapshot, getDocs } from "firebase/firestore";
-import { usersCol, mapChunksCol } from "@/lib/firestore";
+import { usersCol } from "@/lib/firestore";
 import { calcCityScore } from "@/types";
+import {
+  fetchTilesByOwner,
+  TILES_BY_OWNER_KEY,
+  TILES_BY_OWNER_STALE,
+} from "@/features/city/cityScoreQuery";
 import type { UserDoc } from "@/types/firestore";
-import type { ScoredTile } from "@/types";
 
 export type LeaderboardTab = "gold" | "land" | "buildings" | "cityScore";
 
@@ -28,6 +33,7 @@ const FIELD_MAP: Record<Exclude<LeaderboardTab, "cityScore">, keyof UserDoc> = {
 export function useLeaderboard(tab: LeaderboardTab) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setLoading(true);
@@ -38,35 +44,20 @@ export function useLeaderboard(tab: LeaderboardTab) {
       let cancelled = false;
       async function fetchCityScores() {
         try {
-          // Load users và chunks song song
-          const [usersSnap, chunksSnap] = await Promise.all([
+          // Dùng chung cache với useCityScore — full scan mapChunks chỉ chạy 1 lần
+          const [usersSnap, tilesByUser] = await Promise.all([
             getDocs(query(usersCol, limit(50))),
-            getDocs(mapChunksCol),
+            queryClient.fetchQuery({
+              queryKey: TILES_BY_OWNER_KEY,
+              queryFn: fetchTilesByOwner,
+              staleTime: TILES_BY_OWNER_STALE,
+            }),
           ]);
           if (cancelled) return;
 
-          // Build tile map per user
-          const tilesByUser = new Map<string, ScoredTile[]>();
-          for (const doc of chunksSnap.docs) {
-            const tiles = doc.data().tiles ?? {};
-            for (const [key, tile] of Object.entries(tiles)) {
-              if (!tile.ownerId) continue;
-              const [x, y] = key.split("_").map(Number);
-              if (!tilesByUser.has(tile.ownerId))
-                tilesByUser.set(tile.ownerId, []);
-              tilesByUser.get(tile.ownerId)!.push({
-                x,
-                y,
-                buildingType: tile.buildingType,
-                buildingLevel: tile.buildingLevel ?? 1,
-                ownerId: tile.ownerId,
-              });
-            }
-          }
-
           const result: LeaderboardEntry[] = usersSnap.docs.map((d) => {
             const data = d.data();
-            const tiles = tilesByUser.get(d.id) ?? [];
+            const tiles = tilesByUser[d.id] ?? [];
             const score = tiles.length > 0 ? calcCityScore(tiles) : null;
             return {
               uid: d.id,

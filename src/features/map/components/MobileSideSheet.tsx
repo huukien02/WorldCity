@@ -77,7 +77,7 @@ export function MobileSideSheet({ open, onClose }: MobileSideSheetProps) {
         </div>
 
         {/* Scrollable content */}
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto scrollbar-none flex-1">
           <TileInfoPanel />
           <QuestPanel />
           <CityScoreCard />

@@ -36,6 +36,7 @@ export function GameScreen() {
   const [chatOpen, setChatOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const selectedTile = useMapStore((s) => s.selectedTile);
   const activeEvent = useCityEvents(user?.uid);
   const { gold } = useUserGold(user?.uid);
@@ -55,8 +56,10 @@ export function GameScreen() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* ── Desktop sidebar ── hidden on mobile */}
-        <aside className="hidden md:flex w-64 bg-slate-900 border-r border-slate-800 flex-col overflow-y-auto shrink-0">
+        {/* ── Desktop sidebar ── hidden on mobile, collapsible on desktop */}
+        <aside
+          className={`${sidebarOpen ? "md:flex" : "md:hidden"} hidden w-64 bg-slate-900 border-r border-slate-800 flex-col overflow-y-auto scrollbar-none shrink-0`}
+        >
           <div className="p-3 border-b border-slate-800">
             <p className="text-xs text-slate-500 uppercase tracking-wider">
               Thông tin ô đất
@@ -73,6 +76,17 @@ export function GameScreen() {
             currentUserId={user?.uid}
             onTileSelect={handleTileSelect}
           />
+
+          {/* Desktop: toggle sidebar — always visible */}
+          <button
+            onClick={() => setSidebarOpen((v) => !v)}
+            className="hidden md:flex absolute top-3 left-3 z-10 w-8 h-8 items-center justify-center bg-slate-800/90 hover:bg-slate-700 border border-slate-700 rounded text-slate-300 hover:text-white text-sm transition-colors shadow"
+            title={sidebarOpen ? "Ẩn bảng thông tin" : "Hiện bảng thông tin"}
+            aria-label={sidebarOpen ? "Ẩn bảng thông tin" : "Hiện bảng thông tin"}
+          >
+            {sidebarOpen ? "◀" : "▶"}
+          </button>
+
           <ZoomControls />
           {/* Minimap only on desktop */}
           <div className="hidden md:block">

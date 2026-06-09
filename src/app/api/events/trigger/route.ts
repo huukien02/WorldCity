@@ -68,8 +68,12 @@ async function getRandomBuildingTile(
   // Shuffle và chỉ check tối đa 20 chunks để tránh quá chậm
   const shuffled = chunkIds.sort(() => Math.random() - 0.5).slice(0, 20);
 
-  for (const chunkId of shuffled) {
-    const snap = await getDoc(chunkDoc(chunkId));
+  // Đọc song song thay vì tuần tự — tránh cộng dồn latency 20 lần
+  const snaps = await Promise.all(
+    shuffled.map((chunkId) => getDoc(chunkDoc(chunkId))),
+  );
+
+  for (const snap of snaps) {
     if (!snap.exists()) continue;
     const tiles = snap.data().tiles;
     for (const [key, tile] of Object.entries(tiles)) {

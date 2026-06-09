@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { getDocs } from "firebase/firestore";
-import { mapChunksCol } from "@/lib/firestore";
+import { useCallback, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { calcCityScore, type CityScoreBreakdown } from "@/types";
 import {
-  calcCityScore,
-  type CityScoreBreakdown,
-  type ScoredTile,
-} from "@/types";
+  fetchTilesByOwner,
+  TILES_BY_OWNER_KEY,
+  TILES_BY_OWNER_STALE,
+} from "../cityScoreQuery";
 
 export interface UseCityScoreResult {
   score: CityScoreBreakdown | null;
@@ -17,49 +17,24 @@ export interface UseCityScoreResult {
 
 // Dùng được cho cả bản thân (uid = currentUser) lẫn người khác (uid = ownerUid)
 export function useCityScore(uid: string | undefined): UseCityScoreResult {
-  const [score, setScore] = useState<CityScoreBreakdown | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [tick, setTick] = useState(0);
+  const queryClient = useQueryClient();
 
-  const refresh = useCallback(() => setTick((t) => t + 1), []);
+  const { data, isFetching } = useQuery({
+    queryKey: TILES_BY_OWNER_KEY,
+    queryFn: fetchTilesByOwner,
+    staleTime: TILES_BY_OWNER_STALE,
+    enabled: !!uid,
+  });
 
-  useEffect(() => {
-    if (!uid) return;
-    let cancelled = false;
+  const score = useMemo(() => {
+    if (!uid) return null;
+    const tiles = data?.[uid] ?? [];
+    return tiles.length > 0 ? calcCityScore(tiles) : null;
+  }, [data, uid]);
 
-    async function fetch() {
-      setLoading(true);
-      try {
-        const snap = await getDocs(mapChunksCol);
-        if (cancelled) return;
+  const refresh = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: TILES_BY_OWNER_KEY });
+  }, [queryClient]);
 
-        const myTiles: ScoredTile[] = [];
-        for (const doc of snap.docs) {
-          const tiles = doc.data().tiles ?? {};
-          for (const [key, tile] of Object.entries(tiles)) {
-            if (tile.ownerId !== uid) continue;
-            const [x, y] = key.split("_").map(Number);
-            myTiles.push({
-              x,
-              y,
-              buildingType: tile.buildingType,
-              buildingLevel: tile.buildingLevel ?? 1,
-              ownerId: tile.ownerId,
-            });
-          }
-        }
-
-        setScore(myTiles.length > 0 ? calcCityScore(myTiles) : null);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    fetch();
-    return () => {
-      cancelled = true;
-    };
-  }, [uid, tick]);
-
-  return { score, loading, refresh };
+  return { score, loading: isFetching, refresh };
 }
