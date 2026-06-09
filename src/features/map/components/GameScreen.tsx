@@ -10,6 +10,12 @@ import { ChatPanel } from "@/features/chat/components/ChatPanel";
 import { LeaderboardPanel } from "@/features/leaderboard/components/LeaderboardPanel";
 import { MobileSideSheet } from "./MobileSideSheet";
 import { CityScoreCard } from "@/features/city/components/CityScoreCard";
+import { WeatherIndicator } from "@/features/weather/components/WeatherIndicator";
+import { WeatherAutoRotate } from "@/features/weather/components/WeatherAutoRotate";
+import { EventPopup } from "@/features/events/components/EventPopup";
+import { EventAutoTrigger } from "@/features/events/components/EventAutoTrigger";
+import { useCityEvents } from "@/features/events/hooks/useCityEvents";
+import { useUserGold } from "@/features/economy/hooks/useUserGold";
 import { useCurrentUser } from "@/features/auth/hooks/useAuth";
 import { useMapStore } from "../store";
 
@@ -31,6 +37,8 @@ export function GameScreen() {
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const selectedTile = useMapStore((s) => s.selectedTile);
+  const activeEvent = useCityEvents(user?.uid);
+  const { gold } = useUserGold(user?.uid);
 
   // Auto-open sheet when a tile is selected on mobile
   function handleTileSelect() {
@@ -39,6 +47,8 @@ export function GameScreen() {
 
   return (
     <div className="flex flex-col h-[100dvh]">
+      <WeatherAutoRotate />
+      <EventAutoTrigger uid={user?.uid} />
       <Header
         onLeaderboardClick={() => setLeaderboardOpen(true)}
         onMenuClick={() => setSheetOpen((v) => !v)}
@@ -69,6 +79,11 @@ export function GameScreen() {
             <Minimap />
           </div>
           <ChatPanel open={chatOpen} onToggle={() => setChatOpen((v) => !v)} />
+
+          {/* Weather indicator — top right of map */}
+          <div className="absolute top-3 right-3 z-10">
+            <WeatherIndicator />
+          </div>
 
           {/* Mobile: tap-to-open tile info hint */}
           {!selectedTile && (
@@ -101,6 +116,11 @@ export function GameScreen() {
         open={leaderboardOpen}
         onClose={() => setLeaderboardOpen(false)}
       />
+
+      {/* City Event Popup */}
+      {activeEvent && user && (
+        <EventPopup event={activeEvent} uid={user.uid} userGold={gold} />
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import type { KonvaEventObject } from "konva/lib/Node";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
 import { TileLayer } from "./TileLayer";
 import { BuildingLayer } from "./BuildingLayer";
+import { WeatherLayer } from "@/features/weather/components/WeatherLayer";
 import { useMapStore } from "../store";
 import { useChunkLoader } from "../hooks/useChunkLoader";
 import {
@@ -201,7 +202,7 @@ export function MapCanvas({ currentUserId, onTileSelect }: MapCanvasProps) {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full overflow-hidden bg-[#0a0f1a] cursor-grab active:cursor-grabbing touch-none"
+      className="w-full h-full overflow-hidden bg-[#0a0f1a] cursor-grab active:cursor-grabbing touch-none relative"
     >
       <Stage
         width={size.w}
@@ -226,6 +227,8 @@ export function MapCanvas({ currentUserId, onTileSelect }: MapCanvasProps) {
         />
         <BuildingLayer minTile={minTile} maxTile={maxTile} />
       </Stage>
+      {/* WeatherLayer nằm ngoài Stage — phủ full màn hình, không bị camera transform */}
+      <WeatherLayer width={size.w} height={size.h} />
     </div>
   );
 }

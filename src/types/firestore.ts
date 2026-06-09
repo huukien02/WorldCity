@@ -44,6 +44,7 @@ export interface TileData {
   buildingLevel: number;
   builtAt: Timestamp | null;
   lastHarvestAt: Timestamp | null;
+  festivalBonusUntil?: Timestamp | null; // bonus x2 gold từ lễ hội
 }
 
 export interface MapChunkDoc {

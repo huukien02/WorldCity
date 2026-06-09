@@ -16,6 +16,8 @@ import {
 import { BuildModal } from "@/features/building/components/BuildModal";
 import { CityScoreModal } from "@/features/city/components/CityScoreModal";
 import { CLAIM_COST, BUILDING_CONFIG, BUILDING_EMOJI } from "@/types";
+import { useWeather } from "@/features/weather/hooks/useWeather";
+import { WEATHER_CONFIG } from "@/features/weather/types";
 
 export function TileInfoPanel() {
   const selectedTile = useMapStore((s) => s.selectedTile);
@@ -57,7 +59,11 @@ export function TileInfoPanel() {
     pending: pendingGold,
     secondsLeft,
     canHarvest,
+    weatherMultiplier,
   } = usePendingGold(isOwner ? tile : null);
+
+  const { type: weatherType } = useWeather();
+  const weatherConfig = WEATHER_CONFIG[weatherType];
 
   const sellRefund = buildingConfig
     ? Math.floor(buildingConfig.cost * SELL_REFUND_RATE)
@@ -399,7 +405,23 @@ export function TileInfoPanel() {
 
           {isOwner && (
             <div className="mt-3 p-3 rounded-lg bg-slate-800 border border-slate-700">
-              <p className="text-xs text-slate-500 mb-1">Chờ thu hoạch</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs text-slate-500">Chờ thu hoạch</p>
+                {weatherMultiplier !== 1 && (
+                  <span
+                    className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
+                      weatherMultiplier > 1
+                        ? "bg-emerald-900/60 text-emerald-300 border border-emerald-700/50"
+                        : "bg-red-900/60 text-red-300 border border-red-700/50"
+                    }`}
+                  >
+                    {weatherConfig.icon}{" "}
+                    {weatherMultiplier > 1
+                      ? `+${Math.round((weatherMultiplier - 1) * 100)}%`
+                      : `${Math.round((weatherMultiplier - 1) * 100)}%`}
+                  </span>
+                )}
+              </div>
               <p className="text-yellow-400 font-mono text-xl font-bold">
                 +{pendingGold.toLocaleString()} 🪙
               </p>
