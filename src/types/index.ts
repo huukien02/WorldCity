@@ -16,6 +16,13 @@ export const BUILDING_CONFIG = {
   // ── Tier 0: Decoration / Infrastructure ──────────────────────────────────
   fence: { label: "Hàng rào", cost: 30, incomePerMinute: 1, color: "#d4d4d4" },
   gate: { label: "Cổng", cost: 70, incomePerMinute: 1, color: "#e5c48b" },
+  road: { label: "Đường sá", cost: 50, incomePerMinute: 0, color: "#9ca3af" },
+  streetlight: {
+    label: "Đèn đường",
+    cost: 60,
+    incomePerMinute: 0,
+    color: "#facc15",
+  },
   // ── Tier 1: Green / Nature ───────────────────────────────────────────────
   farm: { label: "Nông trại", cost: 80, incomePerMinute: 1, color: "#a3e635" },
   park: { label: "Công viên", cost: 150, incomePerMinute: 1, color: "#6ee7b7" },
@@ -194,10 +201,12 @@ export const BUILDING_EMOJI: Record<string, string> = {
   museum: "🏛️",
   arena: "🏟️",
   stadium: "⚽",
-  tower: "🏙️",
+  tower: "🗼",
   hotel: "🏨",
+  road: "🚧",
+  streetlight: "💡",
   powerPlant: "⚡",
-  mall: "🏬",
+  mall: "🛍️",
   harbor: "⚓",
   university: "🎓",
   airport: "✈️",
@@ -220,8 +229,8 @@ export const CHUNK_SIZE = 10;
 export const TILE_W = 64;
 export const TILE_H = 32;
 
-// Tích lũy tối đa 3 ngày = 4320 phút
-export const HARVEST_CAP_MINUTES = 4320;
+// Tích lũy tối đa 60 phút; sau đó building ngưng cộng dồn cho tới khi thu hoạch.
+export const HARVEST_CAP_MINUTES = 60;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // City Score System
@@ -240,6 +249,8 @@ export const BUILDING_GROUP: Record<string, BuildingGroup> = {
   // Infrastructure
   fence: "infrastructure",
   gate: "infrastructure",
+  road: "infrastructure",
+  streetlight: "infrastructure",
   busStation: "infrastructure",
   powerPlant: "infrastructure",
   // Green / Nature

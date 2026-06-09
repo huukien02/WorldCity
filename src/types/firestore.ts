@@ -3,6 +3,8 @@ import type { Timestamp } from "firebase/firestore";
 export type BuildingType =
   | "fence"
   | "gate"
+  | "road"
+  | "streetlight"
   | "farm"
   | "park"
   | "house"
